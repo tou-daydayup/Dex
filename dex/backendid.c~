@@ -1,0 +1,27 @@
+#include "postgres.h"
+#include "fmgr.h"
+#include "utils/geo_decls.h"
+#include "catalog/pg_type.h"
+#include "storage/backendid.h"
+#include "storage/proc.h"
+
+#ifdef PG_MODULE_MAGIC
+PG_MODULE_MAGIC; 
+#endif
+
+PG_FUNCTION_INFO_V1(test); 
+
+Datum
+test(PG_FUNCTION_ARGS) {
+	ereport(INFO, (errmsg("%d", MyBackendId)));
+	MyBackendDriverIP = "127.0.0.1"; 
+	MyBackendDriverPort = 8080;  
+	PG_RETURN_INT32(0); 
+}
+
+Datum
+test2(PG_FUNCTION_ARGS) {
+	ereport(INFO, (errmsg("%s", MyBackendDriverIP))); 
+	ereport(INFO, (errmsg("%d", MyBackendDriverPort))); 
+	PG_RETURN_INT32(0);
+}

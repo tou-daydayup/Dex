@@ -1,0 +1,17 @@
+#include "postgres.h"
+#include "fmgr.h"
+#include "utils/geo_decls.h"
+#include "utils/array.h"
+#include "catalog/pg_type.h"
+#include "utils/builtins.h"
+#include "storage/backendid.h"
+
+#ifdef PG_MODULE_MAGIC
+PG_MODULE_MAGIC;
+#endif
+
+
+
+
+
+

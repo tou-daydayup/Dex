@@ -1,0 +1,92 @@
+#include "command.h"
+#include "postgres.h"
+#include "fmgr.h"
+#include "utils/geo_decls.h"
+#include "storage/backendid.h"
+#include "storage/proc.h"
+
+int
+Dex_connect_server(char* DexServerIP, int DexServerPort,)
+
+int 
+Dex_connect_script(char* DexServerIP, int DexServerPort, 
+				char* hostIP, int hostPort,
+				char* jarOldAddr, char* jarNewAddr) {
+	char* command = (char*) palloc(1024); 
+
+	memcpy(command, "./submit.sh ", strlen("./submit.sh")); 
+	memcpy(command, DexServerIP, strlen(DexServerIP)); 
+	memcpy(command, " ",1); 
+	char portStr[8]; 
+	itoa(DexServerPort, portStr, 8);
+	memcpy(command, portStr, strlen(portStr));
+	memcpy(command, " ",1); 
+	memcpy(command, hostIP, strlen(hostIP)); 
+	memcpy(command, " ",1); 
+	itoa(hostPort, portStr, 8);
+	memcpy(command, portStr, strlen(portStr));
+ 
+	int status = system(command); 
+
+	ereport(INFO, (errmsg("%d\n",status)));
+	
+	if (-1 != status && WIFEXITED(status) && 0 == WEXITSTATUS(status) ) {	
+		return APPLICATION_START; 	
+	} else {
+		elog(ERROR, "new spark application create failed!");
+		return APPLICATION_ERROR;
+	}			
+}
+
+void
+Dex_sendJSON(char* DexServerIP, int DexServerPort, 
+			char* hostIP, int hostPort, char* jarNewAddr) {
+	char* out; 
+	cJSON *root, *message, *params; 
+	
+	root = cJSON_CreateObject(); 
+	cJSON_AddNumberToObject(root, "Type", 0);
+	cJSON_AddItemToObject(root, "Message", message = cJSON_CreateObject()); 
+	cJSON_AddStringToObject(message, "Func", "newApplication"); 
+	cJSON_AddItemToObject(message, "Parameters", params = cJSON_CreateObject()); 
+	cJSON_AddStringToObject(params, "hostIP", hostIP); 
+	cJSON_AddNumberToObject(params, "hostPort",hostPort); 
+	cJSON_AddStringToObject(params, "jarLink", jarNewAddr);
+
+	out = (char*) cJSON_Print(message);
+	cJSON_AddNumberToObject(root,"Length", strlen(out)); 
+	
+	out = (char*) cJSON_Print(root); 
+	
+	send_msg_tcp(out, DexServerIP, DexServerPort);	
+}
+
+void
+Dex_sendBinary(char* DexServerIP, int DexServerPort,
+			char* hostIP, int hostPort, char* jarNewAddr) {
+	char* out; 
+	cJSON *root, *param; 
+
+	root = cJSON_CreateObject();
+	cJSON_AddStringToObject(root, "Func", "newApplication"); 
+	cJSON_AddItemToObject(root, "Parameters", param=cJSON_CreateObject());
+	cJSON_AddStringToObject(param, "hostIP", hostIP); 
+	cJSON_AddNumberToObject(param, "hostPort", hostPort); 
+	cJSON_AddStringToObject(param, "jarLink", jarNewAddr); 
+
+	out = (char*) cJSON_Print(root);
+	struct commandMessage cMessage;
+	cMessage.type = 0; 
+	cMessage.length = strlen(out);
+	memcpy(cMessage.message, out, strlen(out)); 
+	
+	unsigned char buf[sizeof(struct commandMessage)]; 
+	memcpy((void *)buf, (void *)&cMessage, sizeof(struct commandMessage)); 
+	
+	send_msg_tcp(buf, DexServerIP, DexServerPort);
+}
+
+
+
+
+

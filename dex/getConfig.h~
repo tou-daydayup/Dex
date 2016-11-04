@@ -1,0 +1,22 @@
+#ifndef _GETCONFIG_H
+#define _GETCONFIG_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef unsigned char* string; 
+typedef signed int INT32; 
+typedef unsigned int UINT32; 
+
+struct sockStruct {
+	string ip ; 
+	int port; 
+}
+
+void
+getConfigFileStringValue(string keyname, string output, string file); 
+
+int 
+getConfigFileIntValue(string keyname, string file);
+#endif

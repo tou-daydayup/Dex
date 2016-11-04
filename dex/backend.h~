@@ -1,0 +1,18 @@
+#ifndef _BACKEND_H
+#define _BACKEND_H
+
+#include "storage/backendid.h"
+#include "storage/proc.h"
+#include "globals.h"
+
+int
+resetBackendInfo(string host, int port);
+
+string
+getBackendDriverIP() ;
+
+int
+getBackendDriverPort() ;
+
+#endif
+

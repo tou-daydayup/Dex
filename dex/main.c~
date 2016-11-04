@@ -1,0 +1,11 @@
+#include "getConfig.h"
+
+int main(){
+	char output[256]={0}; 
+	getConfigFileStringValue("HostIP",output, "config.ini"); 
+	
+	printf("%s",output);
+
+
+		return 0;
+}

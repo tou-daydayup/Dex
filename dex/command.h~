@@ -1,0 +1,51 @@
+#ifndef _COMMAND_H
+#define _COMMAND_H
+
+#include "cJSON.h"
+#include "connection.h"
+
+#define commandTye 0
+#define dataType 1
+
+#define APPLICATION_START 1
+#define APPLICATION_ERROR -1
+
+struct commandMessage{
+	int type;
+	int length; 
+	cJSON* message; 
+};
+
+struct dataMessage{
+	char* key; 
+	char* value; 
+}; 
+
+struct parameters{
+	char* paramName; 
+	char* paramValue;
+}; 
+
+int
+Dex_connect_script(char* DexServerIP, int DexServerPort,
+				char* hostIP, int hostPort,
+				char* jarOldAddr, char* jarNewAddr); 
+
+void
+Dex_sendJSON(char* DexServerIP, int DexServerPort, 
+			char* hostIP, int hostPort, char* jarNewAddr); 
+
+void
+Dex_sendBinary(char* DexServerIP, int DexServerPort,
+		char* hostIP, int hostPort, char* jarNewAddr);
+
+void
+Dex_newRemoteSparkSession(char* hostname, int port, 
+						char* username, char* password, char* databasename); 
+
+
+void
+Dex_newRemoteDataSet(char* dataSetID, char* tablename);
+
+
+#endif

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+command='source /home/cai/.profile;/home/cai/Downloads/spark-2.0.1-bin-hadoop2.4/bin/spark-submit --mode=cluster --master=spark://'$1':'$2' '$3
+
+ssh localhost $command

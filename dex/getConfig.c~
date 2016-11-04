@@ -1,0 +1,196 @@
+/* 
+ * FileName: getConfig.c
+ *
+ * Version : V1.0
+ * DateTime: 2016/11/01
+ * 
+ * Function: Get the configuration for the connection.
+ */
+
+#include "getConfig.h"
+
+/* Get the whole path of the current directory
+ * input : 
+ * 		configFileName (char*): the file name of the configuration file
+ *		wholePath (char*): to store the path of the configuration file
+ * return : null
+ * 
+ */
+void
+getCompletePath(string configFileName, string wholePath) {
+	string homePath = NULL; 
+	
+	//validate if input is null
+	if (configFileName == NULL || wholePath == NULL) {
+		printf("configFileName is null!"); 
+		exit(1); 
+	}
+	
+	homePath = (string)getenv("HOME"); //get the current directory
+
+	if (homePath == NULL) {
+		printf("Can't find home path!\n"); 
+		exit(1); 
+	}
+
+	//get the whole path
+	memcpy(wholePath, homePath, strlen(homePath)); 
+	memcpy(wholePath + strlen(homePath) + 1, configFileName, strlen(configFileName)); 
+	printf("%s", wholePath);
+}
+
+/*
+ * Get the string content
+ * input: 
+ * 		p (FILE*) : the point of the file
+ *		keyname (char*) : the name of configuration
+ * output:
+ * 		ouput: the content of configuration
+ * return: null
+ */
+void 
+getStringContentValue (FILE *fp, string keyname, string output) {
+
+	char contentLine[100] = {0}; 
+	
+	//validata if the arguments is null
+	if (fp == NULL) {
+		printf("Configuration File is null!"); 
+		exit(1); 	
+	}
+	if (keyname == NULL) {
+		printf("The configuration name is null!"); 
+		exit(1);
+	}
+	if (output == NULL) {
+		printf("output is null!"); 
+		exit(1);
+	}
+	printf("dgjkdjfd");
+	while (feof(fp) == 0) {
+		memset(contentLine, 0, sizeof(contentLine)); 
+		fgets(contentLine, sizeof(contentLine), fp); 
+
+		if (contentLine[0] == '#' 
+			|| contentLine[0] == '\r' 
+			|| contentLine[0] == '\n' 
+			|| contentLine[0] == '\0') {
+			continue; 
+		}
+
+		//match keyname
+		if (strncasecmp(keyname, contentLine, strlen(keyname)) == 0) {
+			int iPositionFlag; 
+			int iContentLineLen = strlen(contentLine); 
+			for (iPositionFlag = strlen(keyname); 
+					iPositionFlag <= iContentLineLen; iPositionFlag ++) {
+				if (contentLine[iPositionFlag] == ' ') {
+					continue; 
+				}
+				if (contentLine[iPositionFlag] == '=') {
+					break; 				
+				}		
+			} 
+
+			if (iPositionFlag > iContentLineLen)
+				continue; 
+			else {
+				int position; 
+				memcpy (output, &contentLine[iPositionFlag+1], iContentLineLen - iPositionFlag);
+				
+				for (position = strlen(output)-1; position >= 0; position --) {
+					if (output[position] != '\r' 
+							&& output[position] != '\n' 
+							&& output[position] != '\0') {
+						break; 					
+					}
+				} 
+				
+				memset(output + position, 0, iContentLineLen - position); 
+	
+				break; 
+			}
+		}
+	}
+}
+
+/*
+ * Get string form the configuration files
+ * input:
+ * 		keyname:  key name of the configuration
+ * 		configFileName:  file name of the configuration 
+ * 		output: store the output string
+ *　	return : null
+ */
+
+void
+getConfigFileStringValue(string keyname, string output, string file) {
+	printf("gdfdgdf");
+	FILE *fp = NULL; 
+	char wholepath[256] = {0};
+	
+	if(keyname == NULL) {
+		printf("invalid configuration name！"); 
+		exit(1); 	
+	}
+	if(file == NULL) {
+		printf("invalid file name！"); 
+		exit(1); 	
+	}
+	printf("%s", file);
+	getCompletePath(file, wholepath); 
+	fp = fopen(wholepath, "r"); 
+	if (fp == NULL) {
+		printf("Configuration files open failed！");
+		exit(1); 
+	}
+
+	getStringContentValue(fp, keyname, output); 
+
+	fclose(fp); 
+	fp = NULL;
+}
+
+/*
+ * Get Integer form the configuration files
+ * input:
+ * 		keyname:  key name of the configuration
+ * 		configFileName:  file name of the configuration 
+ *　	return : int
+ */
+int 
+getConfigFileIntValue(string keyname, string file) {
+	char getValue[512] = {0}; 
+	int iGetValue  = 0; 
+	
+	if(keyname == NULL) {
+		printf("invalid configuration name！"); 
+		exit(1); 	
+	}
+	if(file == NULL) {
+		printf("invalid file name！"); 
+		exit(1); 	
+	}
+
+	getConfigFileStringValue(keyname, NULL, file);
+
+	if (getValue[0] == '\0' || getValue[0] == '#'){
+		printf("Error configuration！");
+		exit(1);
+	} else {
+		iGetValue = atoi(getValue);
+	}
+	
+	return iGetValue;
+}
+
+
+int main(void){
+	char output[256]={0}; 
+	getConfigFileStringValue("HostIP",output, "config.ini"); 
+	
+	printf("%s\n",output);
+
+
+		return 0;
+}

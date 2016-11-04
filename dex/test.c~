@@ -1,0 +1,82 @@
+
+#include <stdio.h>
+#include <string.h>
+#include <stddef.h>
+#include <math.h>
+#include "cJSON.h"
+
+struct commandMessage{
+	int type;
+	int length; 
+	char message[1024]; 
+};
+
+void
+sendJSON(char* DexServerIP, int DexServerPort, 
+			char* hostIP, int hostPort, char* jarNewAddr) {
+	char* out; 
+	cJSON *root, *message, *params; 
+	
+	root = cJSON_CreateObject(); 
+	cJSON_AddNumberToObject(root, "Type", 0);
+	cJSON_AddItemToObject(root, "Message", message = cJSON_CreateObject()); 
+	cJSON_AddStringToObject(message, "Func", "newApplication"); 
+	cJSON_AddItemToObject(message, "Parameters", params = cJSON_CreateObject()); 
+	cJSON_AddStringToObject(params, "hostIP", hostIP); 
+	cJSON_AddNumberToObject(params, "hostPort",hostPort); 
+	cJSON_AddStringToObject(params, "jarLink", jarNewAddr);
+
+	out = (char*) cJSON_Print(message);
+	cJSON_AddNumberToObject(root,"Length", strlen(out)); 
+	
+	out = (char*) cJSON_Print(root); 
+
+	printf("%s\n", out);
+	
+//	sendMsg(out, DexServerIP, DexServerPort);	
+}
+
+void
+sendBinary(char* DexServerIP, int DexServerPort, 
+			char* hostIP, int hostPort, char* jarNewAddr) {
+	char* out; 
+	cJSON *root, *param; 
+
+	root = cJSON_CreateObject();
+	cJSON_AddStringToObject(root, "Func", "newApplication"); 
+	cJSON_AddItemToObject(root, "Parameters", param=cJSON_CreateObject());
+	cJSON_AddStringToObject(param, "hostIP", hostIP); 
+	cJSON_AddNumberToObject(param, "hostPort", hostPort); 
+	cJSON_AddStringToObject(param, "jarLink", jarNewAddr); 
+
+	out = (char*) cJSON_Print(root);
+
+	struct commandMessage cMessage = {0, strlen(out), ""};
+	memcpy(cMessage.message, out, strlen(out)); 
+	
+	unsigned char buf[sizeof(struct commandMessage)]; 
+	memcpy((void *)buf, (void *)&cMessage, sizeof(struct commandMessage)); 
+	
+//	sendMsg(buf, DexServerIP, DexServerPort);
+}
+
+
+void 
+newApplication(char* DexServerIP, int DexServerPort, 
+				char* hostIP, int hostPort,
+				char* jarOldAddr, char* jarNewAddr) {
+//	char* command = "scp " + jarOldAddr + " "
+//					+ hostIP + ":" + jarNewAddr; 
+//	system(command); 
+	
+	//返回Driver所在节点的ip,port信息
+	sendJSON(DexServerIP, DexServerPort, hostIP, hostPort, jarNewAddr); 
+}
+
+
+void main() {
+	newApplication("172.20.36.110",8080,
+					"172.20.110.61",5432,
+					"/home/cai","/home/caimy");
+}
+
